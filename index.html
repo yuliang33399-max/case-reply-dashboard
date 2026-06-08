@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case &amp; Reply Flow Dashboard</title>
+<style>
+:root{
+  --bg:#0f1420; --panel:#171d2c; --panel2:#1d2435; --line:#2a3347;
+  --txt:#e6ebf5; --mut:#8a96ad; --accent:#5b8def; --good:#37c98b;
+  --warn:#f0b347; --bad:#ef6a6a; --chip:#243049;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);color:var(--txt);font-size:14px;line-height:1.45}
+a{color:var(--accent)}
+header{padding:22px 28px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(15,20,32,.92);backdrop-filter:blur(6px);z-index:5}
+h1{margin:0;font-size:21px;letter-spacing:.2px}
+.sub{color:var(--mut);font-size:12.5px;margin-top:4px}
+.tabs{display:flex;gap:8px;margin-top:14px}
+.tab{padding:8px 16px;border-radius:9px;background:var(--panel);border:1px solid var(--line);
+  cursor:pointer;font-weight:600;color:var(--mut);font-size:13px}
+.tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+main{padding:22px 28px 60px;max-width:1180px;margin:0 auto}
+section{display:none} section.active{display:block}
+.grid{display:grid;gap:14px}
+.kpis{grid-template-columns:repeat(4,1fr);margin-bottom:20px}
+@media(max-width:820px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:16px 18px}
+.kpi .lab{color:var(--mut);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.kpi .val{font-size:30px;font-weight:700;margin-top:6px}
+.kpi .meta{font-size:12px;color:var(--mut);margin-top:3px}
+.kpi .val.good{color:var(--good)} .kpi .val.warn{color:var(--warn)} .kpi .val.accent{color:var(--accent)}
+.row2{grid-template-columns:1fr 1fr} @media(max-width:820px){.row2{grid-template-columns:1fr}}
+h2{font-size:15px;margin:24px 0 12px;font-weight:700}
+.card h3{margin:0 0 14px;font-size:14px;font-weight:700}
+.bar{display:flex;align-items:center;gap:10px;margin:9px 0}
+.bar .name{width:175px;font-size:12.5px;color:var(--mut);flex-shrink:0;text-align:right}
+.bar .track{flex:1;background:var(--panel2);border-radius:6px;height:22px;overflow:hidden;position:relative}
+.bar .fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#3f6fd1,#5b8def);min-width:6px}
+.bar .num{width:96px;font-size:12px;font-weight:700;color:var(--txt);flex-shrink:0;font-variant-numeric:tabular-nums}
+.bar .fill.g{background:linear-gradient(90deg,#1f9c6b,#37c98b)}
+.bar .fill.w{background:linear-gradient(90deg,#c98f2c,#f0b347)}
+.funnel .fill{background:linear-gradient(90deg,#4a63c4,#7b9cf0)}
+.stk{display:flex;height:26px;border-radius:6px;overflow:hidden;background:var(--panel2)}
+.stk span{display:flex;align-items:center;justify-content:center;font-size:10.5px;color:#fff;font-weight:600}
+.daycol{display:grid;grid-template-columns:90px 1fr 46px;align-items:center;gap:10px;margin:8px 0}
+.daycol .dlab{font-size:12px;color:var(--mut);text-align:right}
+.daycol .tot{font-size:12px;font-weight:700;color:var(--mut)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:6px;font-size:12px;color:var(--mut)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.4px;cursor:pointer;user-select:none;position:sticky;top:0;background:var(--panel)}
+tbody tr:hover{background:var(--panel2)}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.controls input,.controls select{background:var(--panel2);border:1px solid var(--line);color:var(--txt);
+  padding:8px 11px;border-radius:9px;font-size:13px;outline:none}
+.controls input{min-width:220px}
+.tablewrap{max-height:560px;overflow:auto;border:1px solid var(--line);border-radius:13px}
+.muted{color:var(--mut)} .mono{font-variant-numeric:tabular-nums}
+.note{font-size:12px;color:var(--mut);background:var(--panel);border:1px solid var(--line);
+  border-left:3px solid var(--accent);border-radius:8px;padding:11px 14px;margin:16px 0}
+.pillrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.pill{background:var(--chip);border-radius:20px;padding:4px 11px;font-size:11.5px;color:var(--txt)}
+.pill b{color:#fff}
+.delta{font-size:11px;font-weight:700} .delta.up{color:var(--good)} .delta.flat{color:var(--mut)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Case &amp; Reply Flow Dashboard</h1>
+  <div class="sub">WhatsApp outreach engine &amp; loan-case pipeline &nbsp;·&nbsp; data as of <b id="asof"></b><span id="srcLink"> &nbsp;·&nbsp; <a href="https://docs.google.com/spreadsheets/d/1R0vZdxOPJ5GVpN8na_Xp3Vs_yvsSlOpWczC5AEaA-4Q/edit" target="_blank">source sheet ↗</a></span><span id="privNote" style="display:none"> &nbsp;·&nbsp; 🔒 shared view — client names &amp; details hidden</span></div>
+  <div class="tabs">
+    <div class="tab active" data-s="flow">📨 Reply Flow</div>
+    <div class="tab" data-s="cases">📁 Running Cases</div>
+  </div>
+</header>
+<main>
+
+<!-- ============ REPLY FLOW ============ -->
+<section id="flow" class="active">
+  <div class="grid kpis" id="flowKpis"></div>
+
+  <div class="grid row2">
+    <div class="card">
+      <h3>Outreach funnel (latest snapshot)</h3>
+      <div id="funnelBars" class="funnel"></div>
+      <div class="note" style="margin:14px 0 0">Conversion from opener → reply → doc request → documents received. Movement vs prior audit shown on the right of each row.</div>
+    </div>
+    <div class="card">
+      <h3>Activity logged (last 6 days)</h3>
+      <div id="catBars"></div>
+      <div class="legend" style="margin-top:14px">
+        <span><i style="background:#5b8def"></i>New leads texted</span>
+        <span><i style="background:#37c98b"></i>Follow-ups sent</span>
+        <span><i style="background:#8a96ad"></i>Already contacted (skipped)</span>
+      </div>
+      <div class="pillrow" id="touchPills" style="margin-top:14px"></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <h3>Daily send volume</h3>
+    <div id="dayStack"></div>
+    <div class="legend">
+      <span><i style="background:#5b8def"></i>New lead</span>
+      <span><i style="background:#37c98b"></i>Follow-up</span>
+      <span><i style="background:#8a96ad"></i>Already contacted</span>
+      <span><i style="background:#f0b347"></i>Group update</span>
+    </div>
+  </div>
+
+  <h2>Activity log</h2>
+  <div class="controls">
+    <input id="flowSearch" placeholder="Search name, phone, note…">
+    <select id="flowCat"><option value="">All actions</option></select>
+    <select id="flowDay"><option value="">All days</option></select>
+  </div>
+  <div class="tablewrap">
+    <table id="flowTable">
+      <thead><tr><th>Date</th><th>Lead</th><th class="piiF">Phone</th><th>Action</th><th class="piiF">Notes</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ RUNNING CASES ============ -->
+<section id="cases">
+  <div class="grid kpis" id="caseKpis"></div>
+
+  <div class="grid row2">
+    <div class="card">
+      <h3>Pipeline funnel — cases reaching each stage</h3>
+      <div id="pipeBars" class="funnel"></div>
+    </div>
+    <div class="card">
+      <h3>Cases by caller</h3>
+      <div id="callerBars"></div>
+      <h3 style="margin-top:18px">Cases by intake month</h3>
+      <div id="monthBars"></div>
+    </div>
+  </div>
+
+  <h2>Case list</h2>
+  <div class="controls">
+    <input id="caseSearch" placeholder="Search lead, caller, eligibility…">
+    <select id="caseStage"><option value="">All stages</option></select>
+    <select id="caseCaller"><option value="">All callers</option></select>
+  </div>
+  <div class="tablewrap">
+    <table id="caseTable">
+      <thead><tr><th>Date</th><th>Lead</th><th>Caller</th><th>Stage reached</th><th class="piiC">Loan eligibility</th><th>Ad source</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+<script>
+const D = {"as_of": "2026-06-08 16:03", "cases": [{"date": "28/04/2026", "month": "April", "contact": "", "lead": "T.", "ads": "WC Threads Organic Leads", "caller": "CA001", "elig": "", "stage_idx": 4, "stage": "Signed Engagement Form"}, {"date": "01/05/2026", "month": "May", "contact": "", "lead": "H.M.", "ads": "WC-CH003-01 - WC Debt Console", "caller": "CA001", "elig": "", "stage_idx": 1, "stage": "Presentation Made"}, {"date": "15/05/2026", "month": "May", "contact": "", "lead": "M.N.A.", "ads": "WC Threads Organic Leads", "caller": "CA001", "elig": "", "stage_idx": 0, "stage": "Not yet presented"}, {"date": "18/05/2026", "month": "May", "contact": "", "lead": "N.M.", "ads": "", "caller": "CA001", "elig": "", "stage_idx": 1, "stage": "Presentation Made"}, {"date": "18/05/2026", "month": "May", "contact": "", "lead": "M.S.J.", "ads": "WC-FB005-06-01 (MAY-STATIC 1/2)", "caller": "CA003", "elig": "", "stage_idx": 0, "stage": "Not yet presented"}, {"date": "18/05/2026", "month": "May", "contact": "", "lead": "Y.B.B.", "ads": "", "caller": "CA006", "elig": "", "stage_idx": 0, "stage": "Not yet presented"}, {"date": "04/06/2026", "month": "June", "contact": "", "lead": "L.", "ads": "WCTT-OL010-01-01 - kaklin ai", "caller": "CA004", "elig": "", "stage_idx": 0, "stage": "Not yet presented"}, {"date": "18/05/2026", "month": "May", "contact": "", "lead": "N.B.B.", "ads": "", "caller": "CA006", "elig": "", "stage_idx": 0, "stage": "Not yet presented"}, {"date": "02/06/2026", "month": "June", "contact": "", "lead": "A.S.Z.", "ads": "WCTT-OL003-1 (0226) Amirul ai V 1.0", "caller": "CA003", "elig": "", "stage_idx": 0, "stage": "Not yet presented"}, {"date": "18/05/2026", "month": "May", "contact": "", "lead": "M.S.B.", "ads": "", "caller": "CA006", "elig": "", "stage_idx": 0, "stage": "Not yet presented"}, {"date": "20/05/2026", "month": "May", "contact": "", "lead": "S.B.", "ads": "WC Threads Organic Leads", "caller": "CA006", "elig": "", "stage_idx": 0, "stage": "Not yet presented"}], "stages": ["Presentation Made", "Qualified Case", "Review Case", "Signed Engagement Form", "Client Docs", "Case Submitted", "Invoice Sent", "Approve"], "stage_reached": [3, 1, 1, 1, 0, 0, 0, 0], "caller_counts": {"CA001": 4, "CA003": 2, "CA006": 4, "CA004": 1}, "month_counts": {"April": 1, "May": 8, "June": 2}, "flow": [{"date": "06/03/2026", "name": "C.", "phone": "", "action": "Sent intro WhatsApp (2 msgs: company info + Jackson intro re Personal Loan)", "notes": "", "cat": "New lead"}, {"date": "06/03/2026", "name": "M.F.I.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/03/2026", "name": "I.S.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/03/2026", "name": "I.A.B.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/03/2026", "name": "A.D.B.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/03/2026", "name": "M.S.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/03/2026", "name": "M.F.A.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/03/2026", "name": "N.S.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/03/2026", "name": "A.D.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/03/2026", "name": "A.A.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/03/2026", "name": "S.B.G.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/03/2026", "name": "A.Z.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/03/2026", "name": "N.F.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/03/2026", "name": "N.S.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/03/2026", "name": "A.F.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/03/2026", "name": "M.F.B.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/03/2026", "name": "M.F.B.", "phone": "", "action": "SENT 2-msg script", "notes": "", "cat": "New lead"}, {"date": "06/03/2026", "name": "J.I.", "phone": "", "action": "SENT 2-msg script", "notes": "", "cat": "New lead"}, {"date": "06/03/2026", "name": "N.J.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "A.S.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "A.H.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "P.P.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "S.F.M.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "S.A.R.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "A.A.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "M.A.S.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "M.S.B.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "N.A.B.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "M.F.I.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "E.P.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "I.B.N.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "A.N.F.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "Y.B.B.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "N.A.B.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "N.B.B.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "N.N.B.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "Z.B.R.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "I.S.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "S.B.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "B.B.A.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "R.B.M.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "M.H.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "N.A.L.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "M.S.B.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "N.F.B.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "N.S.B.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "A.F.B.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "M.F.B.", "phone": "", "action": "Already contacted - not re-sent", "notes": "", "cat": "Already contacted"}, {"date": "06/04/2026", "name": "N.M.S.", "phone": "", "action": "SENT 2-msg script", "notes": "", "cat": "New lead"}, {"date": "06/04/2026", "name": "M.B.S.", "phone": "", "action": "SENT 2-msg script", "notes": "", "cat": "New lead"}, {"date": "06/04/2026", "name": "Y.B.J.", "phone": "", "action": "SENT 2-msg script", "notes": "", "cat": "New lead"}, {"date": "06/04/2026", "name": "M.", "phone": "", "action": "SENT 2-msg script", "notes": "", "cat": "New lead"}, {"date": "06/04/2026", "name": "A.S.B.", "phone": "", "action": "SENT 2-msg script", "notes": "", "cat": "New lead"}, {"date": "06/04/2026", "name": "L.", "phone": "", "action": "SENT 2-msg script", "notes": "", "cat": "New lead"}, {"date": "06/04/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (debt restructure)", "notes": "", "cat": "Follow-up"}, {"date": "06/04/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (debt restructure)", "notes": "", "cat": "Follow-up"}, {"date": "06/04/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (debt restructure)", "notes": "", "cat": "Follow-up"}, {"date": "06/04/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (debt restructure)", "notes": "", "cat": "Follow-up"}, {"date": "06/04/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (debt restructure)", "notes": "", "cat": "Follow-up"}, {"date": "06/04/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (debt restructure)", "notes": "", "cat": "Follow-up"}, {"date": "06/04/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (debt restructure)", "notes": "", "cat": "Follow-up"}, {"date": "06/04/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (debt restructure)", "notes": "", "cat": "Follow-up"}, {"date": "06/04/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (debt restructure)", "notes": "", "cat": "Follow-up"}, {"date": "06/04/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (debt restructure)", "notes": "", "cat": "Follow-up"}, {"date": "06/04/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (debt restructure)", "notes": "", "cat": "Follow-up"}, {"date": "06/04/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (debt restructure)", "notes": "", "cat": "Follow-up"}, {"date": "06/04/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (debt restructure)", "notes": "", "cat": "Follow-up"}, {"date": "06/04/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (debt restructure)", "notes": "", "cat": "Follow-up"}, {"date": "06/04/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (debt restructure)", "notes": "", "cat": "Follow-up"}, {"date": "06/04/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (debt restructure)", "notes": "", "cat": "Follow-up"}, {"date": "06/05/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #2 (Touch 2)", "notes": "", "cat": "Follow-up"}, {"date": "06/05/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #2 (Touch 2)", "notes": "", "cat": "Follow-up"}, {"date": "06/05/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #2 (Touch 2)", "notes": "", "cat": "Follow-up"}, {"date": "06/05/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #2 (Touch 2)", "notes": "", "cat": "Follow-up"}, {"date": "06/05/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #2 (Touch 2)", "notes": "", "cat": "Follow-up"}, {"date": "06/05/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #2 (Touch 2)", "notes": "", "cat": "Follow-up"}, {"date": "06/05/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #2 (Touch 2)", "notes": "", "cat": "Follow-up"}, {"date": "06/05/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #2 (Touch 2)", "notes": "", "cat": "Follow-up"}, {"date": "06/05/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #2 (Touch 2)", "notes": "", "cat": "Follow-up"}, {"date": "06/05/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #2 (Touch 2)", "notes": "", "cat": "Follow-up"}, {"date": "06/05/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (Touch 1)", "notes": "", "cat": "Follow-up"}, {"date": "06/05/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (Touch 1)", "notes": "", "cat": "Follow-up"}, {"date": "06/05/2026", "name": "D.A.A.", "phone": "", "action": "SENT 2-msg script", "notes": "", "cat": "New lead"}, {"date": "06/05/2026", "name": "R.D.", "phone": "", "action": "SENT 2-msg script", "notes": "", "cat": "New lead"}, {"date": "06/06/2026", "name": "D.A.A.", "phone": "", "action": "SENT Follow-up #1 (Touch 1)", "notes": "", "cat": "Follow-up"}, {"date": "06/06/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #2 (Touch 2)", "notes": "", "cat": "Follow-up"}, {"date": "06/06/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #3 (Touch 3)", "notes": "", "cat": "Follow-up"}, {"date": "06/06/2026", "name": "A.H.", "phone": "", "action": "SENT Follow-up #3 (Touch 3)", "notes": "", "cat": "Follow-up"}, {"date": "06/06/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #3 (Touch 3)", "notes": "", "cat": "Follow-up"}, {"date": "06/06/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #3 (Touch 3)", "notes": "", "cat": "Follow-up"}, {"date": "06/06/2026", "name": "N.F.", "phone": "", "action": "SENT Follow-up #3 (Touch 3)", "notes": "", "cat": "Follow-up"}, {"date": "06/06/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #3 (Touch 3)", "notes": "", "cat": "Follow-up"}, {"date": "06/06/2026", "name": "R.B.M.", "phone": "", "action": "SENT Follow-up #3 (Touch 3)", "notes": "", "cat": "Follow-up"}, {"date": "06/06/2026", "name": "N.S.", "phone": "", "action": "SENT Follow-up #3 (Touch 3)", "notes": "", "cat": "Follow-up"}, {"date": "06/06/2026", "name": "A.S.Z.", "phone": "", "action": "SENT 2-msg script", "notes": "", "cat": "New lead"}, {"date": "06/06/2026", "name": "H.B.S.", "phone": "", "action": "SENT 2-msg script", "notes": "", "cat": "New lead"}, {"date": "06/06/2026", "name": "N.S.B.", "phone": "", "action": "SENT 2-msg script", "notes": "", "cat": "New lead"}, {"date": "06/06/2026", "name": "N.R.", "phone": "", "action": "SENT 2-msg script", "notes": "", "cat": "New lead"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (Touch 1)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (Touch 1)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (Touch 1)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (Touch 1)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (Touch 1)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (Touch 1)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (Touch 1)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (Touch 1)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (Touch 1)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (Touch 1)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (Touch 1)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (Touch 1)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (Touch 1)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (Touch 1)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #1 (Touch 1)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #2 (Touch 2)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #2 (Touch 2)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #2 (Touch 2)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #2 (Touch 2)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #3 (Touch 3)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #4 (Touch 4 - final)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #4 (Touch 4 - final)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #4 (Touch 4 - final)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #4 (Touch 4 - final)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #4 (Touch 4 - final)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #4 (Touch 4 - final)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #4 (Touch 4 - final)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "\u2014", "phone": "", "action": "SENT Follow-up #4 (Touch 4 - final)", "notes": "", "cat": "Follow-up"}, {"date": "06/08/2026", "name": "N.E.M.", "phone": "", "action": "Opener [A] sent", "notes": "", "cat": "Other"}, {"date": "06/08/2026", "name": "N.A.S.", "phone": "", "action": "Opener [B] sent", "notes": "", "cat": "Other"}, {"date": "06/08/2026", "name": "M.S.S.", "phone": "", "action": "Opener [C] sent", "notes": "", "cat": "Other"}], "cat_counts": {"New lead": 15, "Already contacted": 45, "Follow-up": 66, "Other": 3}, "touch_counts": {"Touch 1": 34, "Touch 2": 15, "Touch 3": 9, "Touch 4": 8}, "day_cat": {"06/03/2026": {"New lead": 3, "Already contacted": 16}, "06/04/2026": {"Already contacted": 29, "New lead": 6, "Follow-up": 16}, "06/05/2026": {"Follow-up": 12, "New lead": 2}, "06/06/2026": {"Follow-up": 10, "New lead": 4}, "06/08/2026": {"Follow-up": 28, "Other": 3}}, "funnel": [{"stage": "Opener sent", "a": "56.0", "b": "~60", "change": "add 4 new lead"}, {"stage": "Replied at least once", "a": "~38 (68%)", "b": "~41 (68%)", "change": "flat \u2014 A/B test targets this from 8 Jun"}, {"stage": "Reached doc request", "a": "~27 (48%)", "b": "~30 (50%)", "change": "flat"}, {"stage": "Sent documents", "a": "~3 (5%)", "b": "6 (10%)", "change": "\u2b06 doubled"}], "fn_vals": [[60, null], [41, 68], [30, 50], [6, 10]], "public": true};
+if(D.public){
+  document.getElementById('srcLink')?.remove();
+  document.getElementById('privNote').style.display='inline';
+  document.querySelectorAll('.piiF,.piiC').forEach(e=>e.remove());
+}
+document.getElementById('asof').textContent = D.as_of;
+
+// tab switching
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('section').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active'); document.getElementById(t.dataset.s).classList.add('active');
+});
+
+const esc=s=>(s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function bar(name,val,max,cls,label){const pct=max?Math.round(val/max*100):0;
+  return `<div class="bar"><div class="name">${esc(name)}</div><div class="track"><div class="fill ${cls||''}" style="width:${Math.max(pct,2)}%"></div></div><div class="num">${label!=null?label:val}</div></div>`;}
+
+/* ---------- REPLY FLOW ---------- */
+const fv=D.fn_vals, fn=D.funnel;
+const opener=fv[0][0];
+const kpiFlow=[
+  ['Openers sent',opener,'cumulative leads contacted','accent'],
+  ['Replied',fv[1][0],(fv[1][1]||'')+'% reply rate','good'],
+  ['Reached doc request',fv[2][0],(fv[2][1]||'')+'% of openers',''],
+  ['Documents received',fv[3][0],(fv[3][1]||'')+'% of openers — ↑ doubled','warn'],
+];
+document.getElementById('flowKpis').innerHTML=kpiFlow.map(k=>
+  `<div class="card kpi"><div class="lab">${k[0]}</div><div class="val ${k[3]}">${k[1]}</div><div class="meta">${esc(k[2])}</div></div>`).join('');
+
+const fmax=Math.max(...fv.map(v=>v[0]));
+document.getElementById('funnelBars').innerHTML=fn.map((f,i)=>{
+  const up=/⬆|doubl/i.test(f.change)?'up':'flat';
+  const lab=fv[i][0]+(fv[i][1]!=null?' · '+fv[i][1]+'%':'');
+  return `<div class="bar"><div class="name">${esc(f.stage)}</div><div class="track"><div class="fill" style="width:${Math.max(Math.round(fv[i][0]/fmax*100),2)}%"></div></div><div class="num" style="width:74px">${lab}</div><div class="delta ${up}" style="width:120px">${esc(f.change)}</div></div>`;
+}).join('');
+
+const cc=D.cat_counts;
+const cmax=Math.max(cc['New lead']||0,cc['Follow-up']||0,cc['Already contacted']||0);
+document.getElementById('catBars').innerHTML=
+  bar('New leads texted',cc['New lead']||0,cmax,'')+
+  bar('Follow-ups sent',cc['Follow-up']||0,cmax,'g')+
+  `<div class="bar"><div class="name">Already contacted</div><div class="track"><div class="fill" style="width:${Math.max(Math.round((cc['Already contacted']||0)/cmax*100),2)}%;background:linear-gradient(90deg,#5b6678,#8a96ad)"></div></div><div class="num">${cc['Already contacted']||0}</div></div>`;
+
+document.getElementById('touchPills').innerHTML=Object.entries(D.touch_counts).sort()
+  .map(([k,v])=>`<span class="pill">${esc(k)} <b>${v}</b></span>`).join('');
+
+// daily stacked
+const COL={'New lead':'#5b8def','Follow-up':'#37c98b','Already contacted':'#8a96ad','Group update':'#f0b347','Other':'#5b6678'};
+const days=Object.keys(D.day_cat).sort((a,b)=>{const p=s=>s.split('/').reverse().join('');return p(a)<p(b)?-1:1});
+const dmax=Math.max(...days.map(d=>Object.values(D.day_cat[d]).reduce((x,y)=>x+y,0)));
+document.getElementById('dayStack').innerHTML=days.map(d=>{
+  const o=D.day_cat[d];const tot=Object.values(o).reduce((x,y)=>x+y,0);
+  const segs=Object.entries(o).map(([k,v])=>`<span style="width:${v/dmax*100}%;background:${COL[k]||'#5b6678'}" title="${k}: ${v}">${v>2?v:''}</span>`).join('');
+  return `<div class="daycol"><div class="dlab">${esc(d.slice(0,5))}</div><div class="stk">${segs}</div><div class="tot">${tot}</div></div>`;
+}).join('');
+
+// flow table
+const fcat=document.getElementById('flowCat'), fday=document.getElementById('flowDay');
+[...new Set(D.flow.map(f=>f.cat))].forEach(c=>fcat.add(new Option(c,c)));
+days.forEach(d=>fday.add(new Option(d,d)));
+function flowBadge(c){const col=COL[c]||'#5b6678';return `<span class="badge" style="background:${col}22;color:${col}">${esc(c)}</span>`;}
+function renderFlow(){
+  const q=flowSearch.value.toLowerCase(),c=fcat.value,dy=fday.value;
+  const rows=D.flow.filter(f=>(!c||f.cat===c)&&(!dy||f.date===dy)&&
+    (!q||(f.name+f.phone+f.notes+f.action).toLowerCase().includes(q)))
+    .slice().reverse();
+  document.querySelector('#flowTable tbody').innerHTML=rows.map(f=>
+    `<tr><td class="mono">${esc(f.date)}</td><td>${esc(f.name)||'<span class=muted>—</span>'}</td>
+     ${D.public?'':`<td class="mono muted">${esc(f.phone)}</td>`}<td>${flowBadge(f.cat)}<div class="muted" style="margin-top:3px">${esc(f.action)}</div></td>
+     ${D.public?'':`<td class="muted">${esc(f.notes)}</td>`}</tr>`).join('')||`<tr><td colspan=${D.public?3:5} class=muted style="padding:20px">No matches</td></tr>`;
+}
+[flowSearch,fcat,fday].forEach(e=>e.oninput=e.onchange=renderFlow); renderFlow();
+
+/* ---------- RUNNING CASES ---------- */
+const cs=D.cases, SR=D.stage_reached, ST=D.stages;
+const presented=SR[0]||0,qualified=SR[1]||0,docs=SR[4]||0,approved=SR[SR.length-1]||0;
+const kpiCase=[
+  ['Active cases',cs.length,'in the running-case sheet','accent'],
+  ['Presented',presented,Math.round(presented/cs.length*100)+'% of cases',''],
+  ['Qualified+',qualified,'passed qualification','good'],
+  ['Docs / further',docs,'collecting client documents','warn'],
+];
+document.getElementById('caseKpis').innerHTML=kpiCase.map(k=>
+  `<div class="card kpi"><div class="lab">${k[0]}</div><div class="val ${k[3]}">${k[1]}</div><div class="meta">${esc(k[2])}</div></div>`).join('');
+
+const pmax=Math.max(...SR);
+document.getElementById('pipeBars').innerHTML=ST.map((s,i)=>bar(s,SR[i],pmax)).join('');
+
+function kvBars(obj,el,cls){
+  const ents=Object.entries(obj).sort((a,b)=>b[1]-a[1]);const mx=Math.max(...ents.map(e=>e[1]));
+  document.getElementById(el).innerHTML=ents.map(([k,v])=>bar(k,v,mx,cls)).join('');
+}
+kvBars(D.caller_counts,'callerBars','');
+kvBars(D.month_counts,'monthBars','w');
+
+const STCOL=['#8a96ad','#5b8def','#5b8def','#7b6ef0','#9b6ef0','#37c98b','#f0b347','#37c98b'];
+function stageBadge(c){
+  const idx=c.stage_idx;const col=idx===0?'#5b6678':STCOL[idx]||'#37c98b';
+  return `<span class="badge" style="background:${col}22;color:${col}">${idx>=1?idx+'· ':''}${esc(c.stage)}</span>`;
+}
+const cstage=document.getElementById('caseStage'),ccaller=document.getElementById('caseCaller');
+['Not yet presented',...ST].forEach(s=>cstage.add(new Option(s,s)));
+[...new Set(cs.map(c=>c.caller).filter(Boolean))].sort().forEach(c=>ccaller.add(new Option(c,c)));
+function renderCases(){
+  const q=caseSearch.value.toLowerCase(),st=cstage.value,ca=ccaller.value;
+  const rows=cs.filter(c=>(!st||c.stage===st)&&(!ca||c.caller===ca)&&
+    (!q||(c.lead+c.caller+c.elig+c.ads).toLowerCase().includes(q)))
+    .slice().sort((a,b)=>b.stage_idx-a.stage_idx);
+  document.querySelector('#caseTable tbody').innerHTML=rows.map(c=>
+    `<tr><td class="mono">${esc(c.date)}</td><td><b>${esc(c.lead)}</b>${c.contact?`<div class="muted mono">${esc(c.contact)}</div>`:''}</td>
+     <td>${esc(c.caller)||'<span class=muted>—</span>'}</td><td>${stageBadge(c)}</td>
+     ${D.public?'':`<td class="muted">${esc(c.elig)||'—'}</td>`}<td class="muted">${esc(c.ads)||'—'}</td></tr>`).join('')
+    ||'<tr><td colspan=6 class=muted style="padding:20px">No matches</td></tr>';
+}
+[caseSearch,cstage,ccaller].forEach(e=>e.oninput=e.onchange=renderCases); renderCases();
+</script>
+</body>
+</html>
