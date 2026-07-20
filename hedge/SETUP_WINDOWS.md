@@ -67,6 +67,39 @@ If both tests open the opposite side with SL/TP attached, it's working. ✅
 1. Log MT5 into the real CXM account. **Restart the tool** after switching accounts.
 2. Start with one small trade to confirm, then hand it to the operator.
 
+## Step 8 — Link to Tradovate (one click fires both)
+
+With this on, your **normal single click** on Tradovate's Buy/Sell button also fires
+the MT5 hedge — no second cursor, no macro.
+
+1. Install one extra library (once per PC). In Command Prompt:
+   ```
+   py -m pip install pynput
+   ```
+   Then close and relaunch the Hedge tool.
+2. Open Tradovate and arrange your screen how you'll actually trade
+   (Tradovate visible, Hedge window floating on top). **Don't move or resize
+   the Tradovate window after this** — the link remembers screen positions.
+3. In the Hedge window click **SET BUY ZONE**, then move the mouse onto
+   Tradovate's **BUY button** and hold it there. A 5-second countdown runs in
+   the status line; when it hits zero the spot is saved. (Hover only — do not click.)
+4. Do the same with **SET SELL ZONE** over Tradovate's SELL button.
+5. Click **AUTO-HEDGE: OFF** so it turns orange and says **AUTO-HEDGE: ON**.
+6. **Test on DEMO/sim on both platforms:** click Tradovate's Buy button once.
+   Tradovate takes your trade as normal, and the Hedge status line should show
+   `AUTO: SELL 0.30 ...` with the MT5 position appearing in the Trade tab.
+   Test the Sell side too, then CLOSE HEDGE and flatten Tradovate.
+
+Rules to remember:
+
+- **Turn AUTO-HEDGE OFF when you're done trading** — while it's ON, any click
+  within ~45 px of the saved spots fires a hedge, whatever window is on top.
+- If you move/resize the Tradovate window or change monitor setup, **re-set both
+  zones** — otherwise clicks miss the zones (no hedge) or fire from the wrong place.
+- Repeat clicks within 3 seconds are ignored on purpose (double-click protection).
+- The zones are saved to `hedge_zones.json` in the same folder, so they survive
+  a relaunch — but still glance at the test after every fresh start of the day.
+
 ## Notes
 
 - **CLOSE HEDGE only closes trades this tool opened** (it tags them internally),
