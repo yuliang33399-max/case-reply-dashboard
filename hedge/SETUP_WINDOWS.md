@@ -31,15 +31,12 @@ Do this on **one PC on a DEMO account first**. Once it works, repeat on the othe
 ## Step 4 — Put the files on the PC
 
 1. Copy `hedge_button.py` and `run_hedge.bat` into one folder, e.g. `C:\Hedge\`.
-2. Right-click `hedge_button.py` → **Open with → Notepad**.
-3. Edit the CONFIG lines near the top to match your account:
-   ```python
-   SYMBOL    = "XAUUSDb"   # <- the EXACT name from Step 3.4
-   LOT       = 0.30
-   SL_POINTS = 550
-   TP_POINTS = 670
-   ```
-4. Save (Ctrl+S) and close Notepad.
+2. No file editing needed — the symbol is set inside the app: after launching,
+   type the exact name from Step 3.4 (e.g. `XAUUSD` or `XAUUSDb`) into the
+   **SYMBOL box** at the top of the window and press **SET**. The tool checks it
+   against MT5 live and remembers it for next time.
+3. Lot / SL / TP only need Notepad if you ever want to change them
+   (the CONFIG lines at the top of `hedge_button.py`).
 
 ## Step 5 — Launch it
 
@@ -105,10 +102,10 @@ Rules to remember:
 `hedge_button_L2.py` + `run_hedge_L2.bat` are an identical copy of Level 1 with
 lot **0.54** (same SL 550 / TP 670 points). Everything above applies the same way:
 
-- Put both files in the same folder, edit the `SYMBOL` line in
-  `hedge_button_L2.py` too, and launch with `run_hedge_L2.bat`.
-- It has its **own** SET BUY/SELL ZONE and AUTO toggle, saved separately
-  (`hedge_zones_L2.json`), so set its zones once as well.
+- Put both files in the same folder and launch with `run_hedge_L2.bat`.
+  Set its symbol in its own SYMBOL box too.
+- It has its **own** symbol box, SET BUY/SELL ZONE and AUTO toggle, saved
+  separately (`hedge_settings_L2.json`), so set those once as well.
 - Each level's **CLOSE HEDGE only closes its own trades** — L1 and L2 tag their
   positions differently and never touch each other's.
 - **Careful running both at once:** if L1 and L2 are BOTH open with AUTO ON and
