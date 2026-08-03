@@ -100,6 +100,22 @@ Rules to remember:
 - The zones are saved to `hedge_zones.json` in the same folder, so they survive
   a relaunch — but still glance at the test after every fresh start of the day.
 
+## Level 2 bot (0.54 lot)
+
+`hedge_button_L2.py` + `run_hedge_L2.bat` are an identical copy of Level 1 with
+lot **0.54** (same SL 550 / TP 670 points). Everything above applies the same way:
+
+- Put both files in the same folder, edit the `SYMBOL` line in
+  `hedge_button_L2.py` too, and launch with `run_hedge_L2.bat`.
+- It has its **own** SET BUY/SELL ZONE and AUTO toggle, saved separately
+  (`hedge_zones_L2.json`), so set its zones once as well.
+- Each level's **CLOSE HEDGE only closes its own trades** — L1 and L2 tag their
+  positions differently and never touch each other's.
+- **Careful running both at once:** if L1 and L2 are BOTH open with AUTO ON and
+  zones on the same Tradovate buttons, one click fires BOTH hedges
+  (0.30 + 0.54 = 0.84 lots). Keep AUTO on in only one level at a time unless
+  that is exactly what you want.
+
 ## Notes
 
 - **CLOSE HEDGE only closes trades this tool opened** (it tags them internally),

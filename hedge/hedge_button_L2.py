@@ -26,18 +26,18 @@ from tkinter import messagebox
 
 # ================= CONFIG — EDIT THESE 4 LINES =================
 SYMBOL    = "XAUUSDb"   # EXACT gold symbol name from MT5 Market Watch
-LOT       = 0.30        # trade size in lots
+LOT       = 0.54        # trade size in lots
 SL_POINTS = 550         # stop-loss distance, in points
 TP_POINTS = 670         # take-profit distance, in points
 # ===============================================================
 
-MAGIC       = 909090        # tag so CLOSE HEDGE only touches our own trades
-COMMENT     = "hedge-button"
+MAGIC       = 909254        # tag so CLOSE HEDGE only touches our own trades
+COMMENT     = "hedge-button-L2"
 DEVIATION   = 30            # max slippage in points
 ZONE_RADIUS = 45            # pixels around the saved spot that count as "on the button"
 COOLDOWN_S  = 3             # ignore repeat clicks in the same zone for this many seconds
 
-ZONES_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "hedge_zones.json")
+ZONES_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "hedge_zones_L2.json")
 
 root = tk.Tk()
 root.withdraw()  # hide until we know MT5 imports cleanly
@@ -310,7 +310,7 @@ def update_zone_label():
 
 
 root.deiconify()
-root.title("Hedge L1 (0.30)")
+root.title("Hedge L2 (0.54)")
 root.attributes("-topmost", True)
 root.resizable(False, False)
 
